@@ -30,7 +30,8 @@ class Database:
                     email VARCHAR(100) UNIQUE NOT NULL,
                     password_hash VARCHAR(255) NOT NULL,
                     name VARCHAR(100) NOT NULL,
-                    phone_number VARCHAR(10) UNIQUE NOT NULL,
+                    is_admin BOOLEAN DEFAULT FALSE,
+                    phone_number VARCHAR(10) NOT NULL,
                     aadhaar_number VARCHAR(20),
                     dob DATE,
                     gender VARCHAR(10),
@@ -100,18 +101,37 @@ class Database:
         finally:
             cur.close()
 
-    def create_user(self, user_id, email, password_hash, name, phone_number):
+    def create_user(self, user_id, email, password_hash, name, is_admin, phone_number, aadhaar_number, dob, gender, chronic_diseases):
         cur = self.db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         try:
             query = """
-                INSERT INTO app_user (user_id, email, password_hash, name, phone_number)
-                VALUES (%s, %s, %s, %s, %s)
+                INSERT INTO app_user (user_id, email, password_hash, name, is_admin, phone_number, aadhaar_number, dob, gender, chronic_diseases)
+                VALUES (%s, %s, %s, %s, %s, %s,%s, %s, %s, %s)
                 RETURNING user_id;
             """
-            cur.execute(query, (user_id, email, password_hash, name, phone_number,))
+            cur.execute(query, (user_id, email, password_hash, name, is_admin, phone_number, aadhaar_number, dob, gender, chronic_diseases,))
             user_id = cur.fetchone()['user_id']
             self.db.commit()
             return user_id
+        except Exception as e:
+            self.db.rollback()
+            logger.error(f"Database Error: {e}")
+            raise
+        finally:
+            cur.close()
+        
+    def create_organization(self, organization_id, organization_name, license_no, address, contact_number, admin_id):
+        cur = self.db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        try:
+            query = """
+                INSERT INTO organization (organization_id, organization_name, license_no, address, contact_number, admin_id)
+                VALUES (%s, %s, %s, %s, %s, %s)
+                RETURNING organization_id;
+            """
+            cur.execute(query, (organization_id, organization_name, license_no, address, contact_number, admin_id,))
+            organization = cur.fetchone()
+            self.db.commit()
+            return organization
         except Exception as e:
             self.db.rollback()
             logger.error(f"Database Error: {e}")

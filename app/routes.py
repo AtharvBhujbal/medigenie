@@ -65,9 +65,11 @@ def register():
         password = data.get('password')
         name = data.get('name')
         phone_number = data.get('phone_number')
-        # aadhaar_number = data.get('aadhaar_number')
-        # dob = data.get('dob')
-        user = User(email, password, name, phone_number)
+        aadhaar_number = data.get('aadhaar_number')
+        dob = data.get('dob')
+        gender = data.get('gender')
+        chronic_diseases = data.get('chronic_diseases')
+        user = User(email, password, name, phone_number, aadhaar_number, dob, gender, chronic_diseases)
         registered, user_id = user.register()
         if not registered:
             resp = IS_ERROR["ERR_USER_ALREADY_EXISTS"]
@@ -79,6 +81,33 @@ def register():
 
     except Exception as e:
         logger.error(f"Registration Error: {e}")
+        resp = IS_ERROR["ERR_REGISTRATION_FAILED"]
+        status = STATUS["INTERNAL_SERVER_ERROR"]
+
+    return jsonify(resp), status
+
+@med_bp.route('/register-organization',methods=['POST'])
+def register_org():
+    try:
+        data = request.get_json()
+        org_name = data.get("organization_name")
+        license_no = data.get("license_no")
+        address = data.get("address")
+        contact_number = data.get("contact_number")
+        admin_email = data.get("admin_email")
+        user = User(email=admin_email,password=None)
+        user_exits, admin_id = user.get_user_id_by_email()
+        if not user_exits:
+            resp = IS_ERROR["ERR_ADMIN_NOT_FOUND"]
+            status = STATUS["BAD_REQUEST"]
+        else:
+            organization = db.create_organization(user.user_id,org_name,license_no,address,contact_number,admin_id)
+            resp = IS_SUCCESS["REGISTRATION_SUCCESS"]
+            status = STATUS["OK"]
+            resp["organization"] = organization
+
+    except Exception as e:
+        logger.error(f"Oragnization Registration Error: {e}")
         resp = IS_ERROR["ERR_REGISTRATION_FAILED"]
         status = STATUS["INTERNAL_SERVER_ERROR"]
 

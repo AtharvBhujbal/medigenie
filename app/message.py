@@ -17,6 +17,9 @@ IS_ERROR = {
     "ERR_USER_ALREADY_EXISTS": {"code": "user_already_exists", "message": "User already exists"},
     "ERR_REGISTRATION_FAILED": {"code": "registration_failed", "message": "Registration failed"},
 
+    #Admin-related errors
+    "ERR_ADMIN_NOT_FOUND":{"code":"admin_not_found","message":"Admin email not found"},
+
     # Token-related errors
     "ERR_AUTH_TOKEN_MISSING": {"code": "auth_token_missing", "message": "Authentication token is missing"},
     "ERR_AUTH_TOKEN_INVALID": {"code": "auth_token_invalid", "message": "Invalid authentication token"},

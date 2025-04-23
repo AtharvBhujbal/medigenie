@@ -4,12 +4,17 @@ import hashlib
 
 
 class User:
-    def __init__(self, email, password, name=None, phone_number=None, dob=None):
+    def __init__(self, email, password, name=None, is_admin=False, phone_number=None, adhaar_number=None, dob=None, gender=None, chronic_diseases=None):
         self.user_id = uuid.uuid4().hex
         self.email = email
         self.password = password
         self.name = name
+        self.is_admin = is_admin
         self.phone_number = phone_number
+        self.adhaar_number = adhaar_number
+        self.dob = dob
+        self.gender = gender
+        self.chronic_diseases = chronic_diseases
         self._db = db
 
     def _check_password(self, stored_password_hash, provided_password):
@@ -47,8 +52,20 @@ class User:
         if self._db.get_user_by_email(self.email):
             return False, None
         hashed_password = self._hash_password(self.password)
-        user_id = self._db.create_user(self.user_id, self.email, hashed_password, self.name, self.phone_number)
+        user_id = self._db.create_user(self.user_id, self.email, hashed_password, self.name, self.is_admin, self.phone_number, self.adhaar_number, self.dob, self.gender, self.chronic_diseases)
         return True, user_id
-
+    
+    def get_user_id_by_email(self) -> str:
+        """
+        Gets user id by email
+        Returns:
+            tuple: A tuple containing a boolean and a value:
+                - (False, None): If the user doesn't exists.
+                - (True, user_id): If the user exists.
+        """
+        user = self._db.get_user_by_email(self.email)
+        if not user:
+            return False, None
+        return True, user['user_id']
     
 
