@@ -1,11 +1,11 @@
-
 import psycopg2
 from dotenv import load_dotenv
 load_dotenv()
 import os
 from app.log import logger
+import psycopg2.extras
 
-class database:
+class Database:
     def __init__(self):
         self.db = psycopg2.connect(
                     dbname=os.getenv('DB_NAME'),
@@ -16,23 +16,21 @@ class database:
                 )
         
     def initialize_database(self):
-        cur = self.db.cursor()
+        cur = self.db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         try:
             query = """
-                -- Drop tables in reverse dependency order
                 DROP TABLE IF EXISTS consultation_record CASCADE;
                 DROP TABLE IF EXISTS doctor CASCADE;
                 DROP TABLE IF EXISTS organization_user_map CASCADE;
                 DROP TABLE IF EXISTS organization CASCADE;
-                DROP TABLE IF EXISTS user CASCADE;
+                DROP TABLE IF EXISTS app_user CASCADE;
 
-                -- Create user table
-                CREATE TABLE IF NOT EXISTS user (
+                CREATE TABLE IF NOT EXISTS app_user (
                     user_id SERIAL PRIMARY KEY,
                     email VARCHAR(100) UNIQUE NOT NULL,
                     password_hash VARCHAR(255) NOT NULL,
                     name VARCHAR(100) NOT NULL,
-                    phone_number VARCHAR(15),
+                    phone_number VARCHAR(10) UNIQUE NOT NULL,
                     aadhaar_number VARCHAR(20),
                     dob DATE,
                     gender VARCHAR(10),
@@ -41,7 +39,6 @@ class database:
                     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 );
 
-                -- Create organization table
                 CREATE TABLE IF NOT EXISTS organization (
                     organization_id SERIAL PRIMARY KEY,
                     organization_name VARCHAR(100) NOT NULL,
@@ -51,10 +48,9 @@ class database:
                     admin_id INT NOT NULL,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    FOREIGN KEY (admin_id) REFERENCES user(user_id)
+                    FOREIGN KEY (admin_id) REFERENCES app_user(user_id)
                 );
 
-                -- Create organization_user_map table
                 CREATE TABLE IF NOT EXISTS organization_user_map (
                     id SERIAL PRIMARY KEY,
                     organization_id INT NOT NULL,
@@ -63,10 +59,9 @@ class database:
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     FOREIGN KEY (organization_id) REFERENCES organization(organization_id),
-                    FOREIGN KEY (user_id) REFERENCES user(user_id)
+                    FOREIGN KEY (user_id) REFERENCES app_user(user_id)
                 );
 
-                -- Create doctor table
                 CREATE TABLE IF NOT EXISTS doctor (
                     doctor_id SERIAL PRIMARY KEY,
                     user_id INT NOT NULL,
@@ -75,11 +70,10 @@ class database:
                     license_number VARCHAR(50) UNIQUE NOT NULL,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    FOREIGN KEY (user_id) REFERENCES user(user_id),
+                    FOREIGN KEY (user_id) REFERENCES app_user(user_id),
                     FOREIGN KEY (organization_id) REFERENCES organization(organization_id)
                 );
 
-                -- Create consultation_record table
                 CREATE TABLE IF NOT EXISTS consultation_record (
                     record_id SERIAL PRIMARY KEY,
                     patient_id INT NOT NULL,
@@ -91,7 +85,7 @@ class database:
                     consultation_date_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    FOREIGN KEY (patient_id) REFERENCES user(user_id),
+                    FOREIGN KEY (patient_id) REFERENCES app_user(user_id),
                     FOREIGN KEY (doctor_id) REFERENCES doctor(doctor_id),
                     FOREIGN KEY (organization_id) REFERENCES organization(organization_id)
                 );
@@ -106,5 +100,37 @@ class database:
         finally:
             cur.close()
 
+    def create_user(self, email, password_hash, name, phone_number):
+        cur = self.db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        try:
+            query = """
+                INSERT INTO app_user (email, password_hash, name, phone_number)
+                VALUES (%s, %s, %s, %s)
+                RETURNING user_id;
+            """
+            cur.execute(query, (email, password_hash, name, phone_number,))
+            user_id = cur.fetchone()[0]
+            self.db.commit()
+            return user_id
+        except Exception as e:
+            self.db.rollback()
+            logger.error(f"Database Error: {e}")
+            raise
+        finally:
+            cur.close()
 
-db = database()
+    def get_user_by_email(self, email):
+        cur = self.db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        try:
+            query = "SELECT * FROM app_user WHERE email = %s"
+            cur.execute(query, (email,))
+            user = cur.fetchone()
+            return user
+        except Exception as e:
+            logger.error(f"Database Error: {e}")
+            raise
+        finally:
+            cur.close()
+
+
+db = Database()
