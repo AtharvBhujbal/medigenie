@@ -69,7 +69,16 @@ def register():
         dob = data.get('dob')
         gender = data.get('gender')
         chronic_diseases = data.get('chronic_diseases')
-        user = User(email, password, name, phone_number, aadhaar_number, dob, gender, chronic_diseases)
+        user = User(
+            email=email,
+            password=password,
+            name=name,
+            phone_number=phone_number,
+            adhaar_number=aadhaar_number,
+            dob=dob,
+            gender=gender,
+            chronic_diseases=chronic_diseases
+        )
         registered, user_id = user.register()
         if not registered:
             resp = IS_ERROR["ERR_USER_ALREADY_EXISTS"]
