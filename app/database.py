@@ -26,7 +26,7 @@ class Database:
                 DROP TABLE IF EXISTS app_user CASCADE;
 
                 CREATE TABLE IF NOT EXISTS app_user (
-                    user_id SERIAL PRIMARY KEY,
+                    user_id VARCHAR(32) PRIMARY KEY,
                     email VARCHAR(100) UNIQUE NOT NULL,
                     password_hash VARCHAR(255) NOT NULL,
                     name VARCHAR(100) NOT NULL,
@@ -40,12 +40,12 @@ class Database:
                 );
 
                 CREATE TABLE IF NOT EXISTS organization (
-                    organization_id SERIAL PRIMARY KEY,
+                    organization_id VARCHAR(32) PRIMARY KEY,
                     organization_name VARCHAR(100) NOT NULL,
                     license_no VARCHAR(50) UNIQUE NOT NULL,
                     address TEXT,
                     contact_number VARCHAR(15),
-                    admin_id INT NOT NULL,
+                    admin_id VARCHAR(32) NOT NULL,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     FOREIGN KEY (admin_id) REFERENCES app_user(user_id)
@@ -53,8 +53,8 @@ class Database:
 
                 CREATE TABLE IF NOT EXISTS organization_user_map (
                     id SERIAL PRIMARY KEY,
-                    organization_id INT NOT NULL,
-                    user_id INT NOT NULL,
+                    organization_id VARCHAR(32) NOT NULL,
+                    user_id VARCHAR(32) NOT NULL,
                     role VARCHAR(50) NOT NULL,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -63,9 +63,9 @@ class Database:
                 );
 
                 CREATE TABLE IF NOT EXISTS doctor (
-                    doctor_id SERIAL PRIMARY KEY,
-                    user_id INT NOT NULL,
-                    organization_id INT NOT NULL,
+                    doctor_id VARCHAR(32) PRIMARY KEY,
+                    user_id VARCHAR(32) NOT NULL,
+                    organization_id VARCHAR(32) NOT NULL,
                     specialization VARCHAR(100),
                     license_number VARCHAR(50) UNIQUE NOT NULL,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -76,9 +76,9 @@ class Database:
 
                 CREATE TABLE IF NOT EXISTS consultation_record (
                     record_id SERIAL PRIMARY KEY,
-                    patient_id INT NOT NULL,
-                    doctor_id INT NOT NULL,
-                    organization_id INT NOT NULL,
+                    patient_id VARCHAR(32) NOT NULL,
+                    doctor_id VARCHAR(32) NOT NULL,
+                    organization_id VARCHAR(32) NOT NULL,
                     top_5_disease TEXT[],
                     prescribed_medicine TEXT[],
                     transcribe_summary TEXT,
@@ -100,16 +100,16 @@ class Database:
         finally:
             cur.close()
 
-    def create_user(self, email, password_hash, name, phone_number):
+    def create_user(self, user_id, email, password_hash, name, phone_number):
         cur = self.db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         try:
             query = """
-                INSERT INTO app_user (email, password_hash, name, phone_number)
-                VALUES (%s, %s, %s, %s)
+                INSERT INTO app_user (user_id, email, password_hash, name, phone_number)
+                VALUES (%s, %s, %s, %s, %s)
                 RETURNING user_id;
             """
-            cur.execute(query, (email, password_hash, name, phone_number,))
-            user_id = cur.fetchone()[0]
+            cur.execute(query, (user_id, email, password_hash, name, phone_number,))
+            user_id = cur.fetchone()['user_id']
             self.db.commit()
             return user_id
         except Exception as e:

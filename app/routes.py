@@ -48,15 +48,15 @@ def login():
             resp = IS_ERROR["ERR_USER_NOT_FOUND"]
             status = STATUS["NOT_FOUND"]
         
+        else:
+            token = jwt.encode({
+                'user_id': user_id,
+                'exp': datetime.utcnow() + timedelta(hours=1)
+            }, os.getenv('AUTH_SECRET_KEY'), algorithm='HS256')
 
-        token = jwt.encode({
-            'user_id': user_id,
-            'exp': datetime.utcnow() + timedelta(hours=1)
-        }, os.getenv('AUTH_SECRET_KEY'), algorithm='HS256')
-
-        resp = IS_SUCCESS["LOGIN_SUCCESS"]
-        status = STATUS["OK"]
-        resp['token'] = token
+            resp = IS_SUCCESS["LOGIN_SUCCESS"]
+            status = STATUS["OK"]
+            resp['token'] = token
 
     except Exception as e:
         logger.error(f"Login Error: {e}")
@@ -76,12 +76,14 @@ def register():
         # aadhaar_number = data.get('aadhaar_number')
         # dob = data.get('dob')
         user = User(email, password, name, phone_number)
-        if not user.register():
+        registered, user_id = user.register()
+        if not registered:
             resp = IS_ERROR["ERR_USER_ALREADY_EXISTS"]
             status = STATUS["BAD_REQUEST"]
         else:
             resp = IS_SUCCESS["REGISTRATION_SUCCESS"]
             status = STATUS["OK"]
+            resp['user_id'] = user_id
 
     except Exception as e:
         logger.error(f"Registration Error: {e}")

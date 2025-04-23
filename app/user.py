@@ -1,9 +1,11 @@
 from .database import db
+import uuid
 import hashlib
 
 
 class User:
     def __init__(self, email, password, name=None, phone_number=None, dob=None):
+        self.user_id = uuid.uuid4().hex
         self.email = email
         self.password = password
         self.name = name
@@ -34,17 +36,19 @@ class User:
             return False, None
         return True, user['user_id']
     
-    def register(self) -> bool:
+    def register(self) -> tuple[bool, str]:
         """
         Registers a new user.
         Returns:
-            bool: True if registration is successful, False if the user already exists.
+            tuple: A tuple containing a boolean and a value:
+                - (False, None): If the user already exists.
+                - (True, user_id): If the user is successfully registered.
         """
         if self._db.get_user_by_email(self.email):
-            return False
+            return False, None
         hashed_password = self._hash_password(self.password)
-        self._db.create_user(self.email, hashed_password, self.name, self.phone_number)
-        return True
+        user_id = self._db.create_user(self.user_id, self.email, hashed_password, self.name, self.phone_number)
+        return True, user_id
 
     
 
