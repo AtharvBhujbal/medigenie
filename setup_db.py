@@ -19,5 +19,5 @@ if __name__ == "__main__":
         is_admin= True,
         phone_number="1234567890"
     )
-    admin.register()
+    admin.create()
     print("Admin created Successfully")

@@ -8,6 +8,7 @@ from .log import logger
 from .redis import cache
 from .user import User
 from .doctor import Doctor
+from .organization import Organization
 from .token import token_obj
 from .decorator import token_required, admin_required, sudo_admin_required
 
@@ -97,13 +98,13 @@ def create():
 
     return jsonify(resp), status
 
-@med_bp.route('/register-organization',methods=['POST'])
+@med_bp.route('/create-organization',methods=['POST'])
 @admin_required
-def register_org():
+def create_organization():
     try:
         data = request.get_json()
         org_name = data.get("organization_name")
-        license_no = data.get("license_no")
+        license_number = data.get("license_number")
         address = data.get("address")
         contact_number = data.get("contact_number")
         admin_email = data.get("admin_email")
@@ -113,10 +114,21 @@ def register_org():
             resp = IS_ERROR["ERR_ADMIN_NOT_FOUND"]
             status = STATUS["BAD_REQUEST"]
         else:
-            organization = db.create_organization(user.user_id,org_name,license_no,address,contact_number,admin_id)
-            resp = IS_SUCCESS["REGISTRATION_SUCCESS"]
-            status = STATUS["OK"]
-            resp["organization"] = organization
+            organization = Organization(
+                name=org_name,
+                license_number=license_number,
+                address=address,
+                contact_number=contact_number,
+                admin_id=admin_id
+            )
+            created, organization_id = organization.create()
+            if not created:
+                resp = IS_ERROR["ERR_ORG_ALREADY_EXISTS"]
+                status = STATUS["BAD_REQUEST"]
+            else:
+                resp = IS_SUCCESS["REGISTRATION_SUCCESS"]
+                status = STATUS["OK"]
+                resp["organization_id"] = organization_id
 
     except psycopg2.errors.UniqueViolation as e:
         logger.error(f"Unique Violation Error: {e}")

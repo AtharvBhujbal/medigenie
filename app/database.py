@@ -60,7 +60,7 @@ class Database:
                 CREATE TABLE IF NOT EXISTS organization (
                     organization_id VARCHAR(32) PRIMARY KEY,
                     organization_name VARCHAR(100) NOT NULL,
-                    license_no VARCHAR(50) UNIQUE NOT NULL,
+                    license_number VARCHAR(50) UNIQUE NOT NULL,
                     address TEXT,
                     contact_number VARCHAR(15),
                     admin_id VARCHAR(32) UNIQUE NOT NULL,
@@ -118,13 +118,17 @@ class Database:
         """
         return self.__execute_query(query, (user_id, email, password_hash, name, is_admin, phone_number, aadhaar_number, dob, gender, chronic_diseases), fetchone=True)['user_id']
 
-    def create_organization(self, organization_id, organization_name, license_no, address, contact_number, admin_id):
+    def create_organization(self, organization_id, organization_name, license_number, address, contact_number, admin_id):
         query = """
-            INSERT INTO organization (organization_id, organization_name, license_no, address, contact_number, admin_id)
+            INSERT INTO organization (organization_id, organization_name, license_number, address, contact_number, admin_id)
             VALUES (%s, %s, %s, %s, %s, %s)
             RETURNING organization_id;
         """
-        return self.__execute_query(query, (organization_id, organization_name, license_no, address, contact_number, admin_id), fetchone=True)['organization_id']
+        return self.__execute_query(query, (organization_id, organization_name, license_number, address, contact_number, admin_id), fetchone=True)['organization_id']
+    
+    def get_organization_by_license(self, license_number):
+        query = "SELECT * FROM organization WHERE license_number = %s"
+        return self.__execute_query(query, (license_number,), fetchone=True)
 
     def get_user_by_email(self, email):
         query = "SELECT * FROM app_user WHERE email = %s"
@@ -136,7 +140,7 @@ class Database:
 
     def get_user_admin_privilage_by_id(self, user_id):
         query = "SELECT is_admin FROM app_user WHERE user_id = %s"
-        return self.__execute_query(query, (user_id,), fetchone=True)
+        return self.__execute_query(query, (user_id,), fetchone=True)['is_admin']
 
     def update_user_privilage(self, user_id, is_admin):
         query = "UPDATE app_user SET is_admin = %s WHERE user_id = %s"

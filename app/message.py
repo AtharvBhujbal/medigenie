@@ -29,6 +29,9 @@ IS_ERROR = {
     "ERR_AUTH_TOKEN_MISSING": {"code": "auth_token_missing", "message": "Authentication token is missing"},
     "ERR_AUTH_TOKEN_INVALID": {"code": "auth_token_invalid", "message": "Invalid authentication token"},
     "ERR_AUTH_TOKEN_EXPIRED": {"code": "auth_token_expired", "message": "Authentication token has expired"},
+
+    #Organization related errors
+    "ERR_ORG_ALREADY_EXISTS": {"code": "org_already_exists", "message": "Organization already exists"},
 }
 
 

@@ -67,11 +67,3 @@ class User:
         if not user:
             return False, None
         return True, user['user_id']
-    
-    def isAdmin(self) -> bool:
-        """
-        Checks if the user is an admin.
-        Returns:
-            bool: True if the user is an admin, False otherwise.
-        """
-        return self.is_admin
