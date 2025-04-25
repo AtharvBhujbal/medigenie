@@ -5,8 +5,9 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from .message import IS_ERROR, STATUS
-from .routes import med_bp as app
 from .token import token_obj
+from .database import db
+
 
 def token_required(f):
     @wraps(f)
@@ -22,3 +23,19 @@ def token_required(f):
             return jsonify(resp), status
         return f(*args, **kwargs)
     return decorated
+
+def admin_required(f):
+    @wraps(f)
+    def decorator(*args, **kwargs):
+        user_id = request.headers.get('user_id')
+        if not user_id:
+            resp = IS_ERROR["ERR_USER_ID_MISSING"]
+            status = STATUS["BAD_REQUEST"]
+            return jsonify(resp), status
+        is_admin = db.get_user_admin_privilage_by_id(user_id)
+        if not is_admin:
+            resp = IS_ERROR["ERR_USER_UNAUTHORIZED"]
+            status = STATUS["BAD_REQUEST"]
+            return jsonify(resp), status
+        return f(*args, **kwargs)
+    return decorator
