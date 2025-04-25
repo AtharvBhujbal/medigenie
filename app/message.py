@@ -21,14 +21,14 @@ IS_ERROR = {
     "ERR_USER_PRIVILEGE_MISSING": {"code": "user_privilege_missing", "message": "User privilege is missing"},
     "ERR_USER_UPDATE_FAILED": {"code": "user_update_failed", "message": "User update failed"},
 
-    #Admin-related errors
-    "ERR_ADMIN_NOT_FOUND":{"code":"admin_not_found","message":"Admin email not found"},
+    # Admin-related errors
+    "ERR_ADMIN_NOT_FOUND": {"code": "admin_not_found", "message": "Admin email not found"},
+    "ERR_ADMIN_ORG_DUPLICATE": {"code": "admin_org_duplicate", "message": "Cannot create multiple organizations with the same Email ID"},
 
     # Token-related errors
     "ERR_AUTH_TOKEN_MISSING": {"code": "auth_token_missing", "message": "Authentication token is missing"},
     "ERR_AUTH_TOKEN_INVALID": {"code": "auth_token_invalid", "message": "Invalid authentication token"},
     "ERR_AUTH_TOKEN_EXPIRED": {"code": "auth_token_expired", "message": "Authentication token has expired"},
-
 }
 
 

@@ -1,4 +1,5 @@
 from flask import Blueprint, render_template, jsonify, request
+import psycopg2
 med_bp = Blueprint('med', __name__)
 
 from .database import db
@@ -116,6 +117,10 @@ def register_org():
             status = STATUS["OK"]
             resp["organization"] = organization
 
+    except psycopg2.errors.UniqueViolation as e:
+        logger.error(f"Unique Violation Error: {e}")
+        resp = IS_ERROR["ERR_ADMIN_ORG_DUPLICATE"]
+        status = STATUS["BAD_REQUEST"]
     except Exception as e:
         logger.error(f"Oragnization Registration Error: {e}")
         resp = IS_ERROR["ERR_REGISTRATION_FAILED"]
@@ -140,6 +145,7 @@ def update_user_privilege():
             db.update_user_privilage(user_id,is_admin)
             resp = IS_SUCCESS["REGISTRATION_SUCCESS"]
             status = STATUS["OK"]
+
     except Exception as e:
         logger.error(f"Update User Privilege Error: {e}")
         resp = IS_ERROR["ERR_USER_UPDATE_FAILED"]

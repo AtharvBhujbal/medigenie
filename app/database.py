@@ -46,7 +46,7 @@ class Database:
                     license_no VARCHAR(50) UNIQUE NOT NULL,
                     address TEXT,
                     contact_number VARCHAR(15),
-                    admin_id VARCHAR(32) NOT NULL,
+                    admin_id VARCHAR(32) UNIQUE NOT NULL,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     FOREIGN KEY (admin_id) REFERENCES app_user(user_id)
