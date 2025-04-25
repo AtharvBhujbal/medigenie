@@ -28,7 +28,7 @@ def token_required(f):
 def admin_required(f):
     @wraps(f)
     def decorator(*args, **kwargs):
-        user_id = request.headers.get('user_id')
+        user_id = request.headers.get('UserID')
         if not user_id:
             resp = IS_ERROR["ERR_USER_ID_MISSING"]
             status = STATUS["BAD_REQUEST"]
@@ -44,7 +44,7 @@ def admin_required(f):
 def sudo_admin_required(f):
     @wraps(f)
     def decorator(*args, **kwargs):
-        user_id = request.headers.get('user_id')
+        user_id = request.headers.get('UserID')
         if not user_id:
             resp = IS_ERROR["ERR_USER_ID_MISSING"]
             status = STATUS["BAD_REQUEST"]

@@ -128,7 +128,7 @@ def register_org():
 def update_user_privilege():
     try:
         data = request.get_json()
-        user_id = request.headers.get('user_id')
+        user_id = data.get('user_id')
         is_admin = data.get("is_admin")
         if user_id is None:
             resp = IS_ERROR["ERR_USER_ID_MISSING"]
