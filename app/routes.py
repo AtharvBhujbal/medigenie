@@ -7,7 +7,7 @@ from .log import logger
 from .redis import cache
 from .user import User
 from .token import token_obj
-from .decorator import token_required
+from .decorator import token_required, admin_required
 
 @med_bp.route('/')
 def hello():
@@ -96,6 +96,7 @@ def register():
     return jsonify(resp), status
 
 @med_bp.route('/register-organization',methods=['POST'])
+@admin_required
 def register_org():
     try:
         data = request.get_json()
@@ -118,6 +119,30 @@ def register_org():
     except Exception as e:
         logger.error(f"Oragnization Registration Error: {e}")
         resp = IS_ERROR["ERR_REGISTRATION_FAILED"]
+        status = STATUS["INTERNAL_SERVER_ERROR"]
+
+    return jsonify(resp), status
+
+@med_bp.route('/update-user-privilege',methods=['POST'])
+@admin_required
+def update_user_privilege():
+    try:
+        data = request.get_json()
+        user_id = request.headers.get('user_id')
+        is_admin = data.get("is_admin")
+        if user_id is None:
+            resp = IS_ERROR["ERR_USER_ID_MISSING"]
+            status = STATUS["BAD_REQUEST"]
+        elif is_admin is None:
+            resp = IS_ERROR["ERR_USER_PRIVILEGE_MISSING"]
+            status = STATUS["BAD_REQUEST"]
+        else:
+            db.update_user_privilage(user_id,is_admin)
+            resp = IS_SUCCESS["REGISTRATION_SUCCESS"]
+            status = STATUS["OK"]
+    except Exception as e:
+        logger.error(f"Update User Privilege Error: {e}")
+        resp = IS_ERROR["ERR_USER_UPDATE_FAILED"]
         status = STATUS["INTERNAL_SERVER_ERROR"]
 
     return jsonify(resp), status

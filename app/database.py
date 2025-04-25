@@ -151,6 +151,32 @@ class Database:
             raise
         finally:
             cur.close()
+    
+    def get_user_admin_privilage_by_id(self,user_id):
+        cur = self.db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        try:
+            query = "SELECT is_admin FROM app_user WHERE user_id = %s"
+            cur.execute(query, (user_id,))
+            is_admin = cur.fetchone()
+            return is_admin
+        except Exception as e:
+            logger.error(f"Database Error: {e}")
+            raise
+        finally:
+            cur.close()
+
+    def update_user_privilage(self, user_id, is_admin):
+        cur = self.db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        try:
+            query = "UPDATE app_user SET is_admin = %s WHERE user_id = %s"
+            cur.execute(query, (is_admin, user_id,))
+            self.db.commit()
+        except Exception as e:
+            self.db.rollback()
+            logger.error(f"Database Error: {e}")
+            raise
+        finally:
+            cur.close()
 
 
 db = Database()

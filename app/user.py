@@ -4,8 +4,8 @@ import hashlib
 
 
 class User:
-    def __init__(self, email, password, name=None, is_admin=False, phone_number=None, adhaar_number=None, dob=None, gender=None, chronic_diseases=None):
-        self.user_id = uuid.uuid4().hex
+    def __init__(self, user_id=None, email=None, password=None, name=None, is_admin=False, phone_number=None, adhaar_number=None, dob=None, gender=None, chronic_diseases=None):
+        self.user_id = uuid.uuid4().hex if user_id is None else user_id
         self.email = email
         self.password = password
         self.name = name
@@ -68,4 +68,10 @@ class User:
             return False, None
         return True, user['user_id']
     
-
+    def isAdmin(self) -> bool:
+        """
+        Checks if the user is an admin.
+        Returns:
+            bool: True if the user is an admin, False otherwise.
+        """
+        return self.is_admin

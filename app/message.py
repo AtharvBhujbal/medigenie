@@ -16,6 +16,10 @@ IS_ERROR = {
     "ERR_LOGIN_FAILED": {"code": "login_failed", "message": "Login failed"},
     "ERR_USER_ALREADY_EXISTS": {"code": "user_already_exists", "message": "User already exists"},
     "ERR_REGISTRATION_FAILED": {"code": "registration_failed", "message": "Registration failed"},
+    "ERR_USER_ID_MISSING": {"code": "user_id_missing", "message": "User ID is missing in the request"},
+    "ERR_USER_UNAUTHORIZED": {"code": "user_unauthorized", "message": "User is not authorized to perform this action"},
+    "ERR_USER_PRIVILEGE_MISSING": {"code": "user_privilege_missing", "message": "User privilege is missing"},
+    "ERR_USER_UPDATE_FAILED": {"code": "user_update_failed", "message": "User update failed"},
 
     #Admin-related errors
     "ERR_ADMIN_NOT_FOUND":{"code":"admin_not_found","message":"Admin email not found"},
