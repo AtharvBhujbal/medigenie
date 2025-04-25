@@ -85,7 +85,7 @@ class Database:
                     user_id VARCHAR(32) NOT NULL,
                     organization_id VARCHAR(32) NOT NULL,
                     specialization VARCHAR(100),
-                    license_number VARCHAR(50) UNIQUE NOT NULL,
+                    license_number VARCHAR(50) NOT NULL,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     FOREIGN KEY (user_id) REFERENCES app_user(user_id),
@@ -124,7 +124,7 @@ class Database:
             VALUES (%s, %s, %s, %s, %s, %s)
             RETURNING organization_id;
         """
-        return self.__execute_query(query, (organization_id, organization_name, license_no, address, contact_number, admin_id), fetchone=True)
+        return self.__execute_query(query, (organization_id, organization_name, license_no, address, contact_number, admin_id), fetchone=True)['organization_id']
 
     def get_user_by_email(self, email):
         query = "SELECT * FROM app_user WHERE email = %s"
@@ -142,5 +142,16 @@ class Database:
         query = "UPDATE app_user SET is_admin = %s WHERE user_id = %s"
         self.__execute_query(query, (is_admin, user_id))
 
+    def create_doctor(self, doctor_id, user_id, organization_id, specialization, license_number):
+        query = """
+            INSERT INTO doctor (doctor_id, user_id, organization_id, specialization, license_number)
+            VALUES (%s, %s, %s, %s, %s)
+            RETURNING doctor_id;
+        """
+        return self.__execute_query(query, (doctor_id, user_id, organization_id, specialization, license_number), fetchone=True)['doctor_id']
 
+    def get_doctor_by_user_id(self, user_id):
+        query = "SELECT * FROM doctor WHERE user_id = %s"
+        return self.__execute_query(query, (user_id,), fetchone=True)
+    
 db = Database()

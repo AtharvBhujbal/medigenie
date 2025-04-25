@@ -7,6 +7,7 @@ from .message import IS_SUCCESS, IS_ERROR, STATUS
 from .log import logger
 from .redis import cache
 from .user import User
+from .doctor import Doctor
 from .token import token_obj
 from .decorator import token_required, admin_required, sudo_admin_required
 
@@ -40,7 +41,7 @@ def login():
             resp = IS_ERROR["ERR_INVALID_CREDENTIALS"]
             status = STATUS["BAD_REQUEST"]
 
-        user = User(email, password)
+        user = User(email=email, password=password)
         valid, user_id = user.isUserValid()
         if not valid:
             resp = IS_ERROR["ERR_USER_NOT_FOUND"]
@@ -58,8 +59,8 @@ def login():
     
     return jsonify(resp), status
 
-@med_bp.route('/register', methods=['POST'])
-def register():
+@med_bp.route('/create', methods=['POST'])
+def create():
     try:
         data = request.get_json()
         email = data.get('email')
@@ -80,8 +81,8 @@ def register():
             gender=gender,
             chronic_diseases=chronic_diseases
         )
-        registered, user_id = user.register()
-        if not registered:
+        created, user_id = user.create()
+        if not created:
             resp = IS_ERROR["ERR_USER_ALREADY_EXISTS"]
             status = STATUS["BAD_REQUEST"]
         else:
@@ -149,6 +150,41 @@ def update_user_privilege():
     except Exception as e:
         logger.error(f"Update User Privilege Error: {e}")
         resp = IS_ERROR["ERR_USER_UPDATE_FAILED"]
+        status = STATUS["INTERNAL_SERVER_ERROR"]
+
+    return jsonify(resp), status
+
+@med_bp.route('/register-doctor',methods=['POST'])
+def register_doctor():
+    try:
+        data = request.get_json()
+        doctor_mail = data.get('doctor_mail')
+        organization_id = data.get('organization_id')
+        specialization = data.get('specialization')
+        license_number = data.get('license_number')
+        user = User(email=doctor_mail,password=None)
+        user_exits, user_id = user.get_user_id_by_email()
+        if not user_exits:
+            resp = IS_ERROR["ERR_USER_NOT_FOUND"]
+            status = STATUS["BAD_REQUEST"]
+        else:
+            doctor = Doctor(
+                user_id=user_id,
+                organization_id=organization_id,
+                specialization=specialization,
+                license_number=license_number
+            )
+            doctor_registered, doctor_id = doctor.register()
+            if not doctor_registered:
+                resp = IS_ERROR["ERR_USER_ALREADY_EXISTS"]
+                status = STATUS["BAD_REQUEST"]
+            else:
+                resp = IS_SUCCESS["REGISTRATION_SUCCESS"]
+                status = STATUS["OK"]
+                resp['doctor_id'] = doctor_id
+    except Exception as e:
+        logger.error(f"Doctor Registration Error: {e}")
+        resp = IS_ERROR["ERR_REGISTRATION_FAILED"]
         status = STATUS["INTERNAL_SERVER_ERROR"]
 
     return jsonify(resp), status

@@ -41,13 +41,13 @@ class User:
             return False, None
         return True, user['user_id']
     
-    def register(self) -> tuple[bool, str]:
+    def create(self) -> tuple[bool, str]:
         """
-        Registers a new user.
+        Creats a new user.
         Returns:
             tuple: A tuple containing a boolean and a value:
                 - (False, None): If the user already exists.
-                - (True, user_id): If the user is successfully registered.
+                - (True, user_id): If the user is successfully created.
         """
         if self._db.get_user_by_email(self.email):
             return False, None
