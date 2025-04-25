@@ -151,6 +151,19 @@ class Database:
             raise
         finally:
             cur.close()
+
+    def get_user_by_id(self, user_id):
+        cur = self.db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        try:
+            query = "SELECT * FROM app_user WHERE user_id = %s"
+            cur.execute(query, (user_id,))
+            user = cur.fetchone()
+            return user
+        except Exception as e:
+            logger.error(f"Database Error: {e}")
+            raise
+        finally:
+            cur.close()
     
     def get_user_admin_privilage_by_id(self,user_id):
         cur = self.db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)

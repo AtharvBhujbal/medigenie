@@ -7,7 +7,7 @@ from .log import logger
 from .redis import cache
 from .user import User
 from .token import token_obj
-from .decorator import token_required, admin_required
+from .decorator import token_required, admin_required, sudo_admin_required
 
 @med_bp.route('/')
 def hello():
@@ -124,7 +124,7 @@ def register_org():
     return jsonify(resp), status
 
 @med_bp.route('/update-user-privilege',methods=['POST'])
-@admin_required
+@sudo_admin_required
 def update_user_privilege():
     try:
         data = request.get_json()

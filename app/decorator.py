@@ -3,6 +3,7 @@ from flask import request, jsonify
 
 from dotenv import load_dotenv
 load_dotenv()
+import os
 
 from .message import IS_ERROR, STATUS
 from .token import token_obj
@@ -34,6 +35,22 @@ def admin_required(f):
             return jsonify(resp), status
         is_admin = db.get_user_admin_privilage_by_id(user_id)
         if not is_admin:
+            resp = IS_ERROR["ERR_USER_UNAUTHORIZED"]
+            status = STATUS["BAD_REQUEST"]
+            return jsonify(resp), status
+        return f(*args, **kwargs)
+    return decorator
+
+def sudo_admin_required(f):
+    @wraps(f)
+    def decorator(*args, **kwargs):
+        user_id = request.headers.get('user_id')
+        if not user_id:
+            resp = IS_ERROR["ERR_USER_ID_MISSING"]
+            status = STATUS["BAD_REQUEST"]
+            return jsonify(resp), status
+        user = db.get_user_by_id(user_id)
+        if user['email'] != os.getenv("SUDO_ADMIN_EMAIL"):
             resp = IS_ERROR["ERR_USER_UNAUTHORIZED"]
             status = STATUS["BAD_REQUEST"]
             return jsonify(resp), status
