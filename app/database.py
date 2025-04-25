@@ -14,11 +14,28 @@ class Database:
                     host=os.getenv('DB_HOST'),
                     port=os.getenv('DB_PORT')
                 )
-        
-    def initialize_database(self):
+    
+    def __execute_query(self, query, params=None, fetchone=False, fetchall=False):
         cur = self.db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         try:
-            query = """
+            cur.execute(query, params)
+            if fetchone:
+                result = cur.fetchone()
+            elif fetchall:
+                result = cur.fetchall()
+            else:
+                result = None
+            self.db.commit()
+            return result
+        except Exception as e:
+            self.db.rollback()
+            logger.error(f"Database Error: {e}")
+            raise
+        finally:
+            cur.close()
+       
+    def initialize_database(self):
+        query = """
                 DROP TABLE IF EXISTS consultation_record CASCADE;
                 DROP TABLE IF EXISTS doctor CASCADE;
                 DROP TABLE IF EXISTS organization_user_map CASCADE;
@@ -90,106 +107,40 @@ class Database:
                     FOREIGN KEY (doctor_id) REFERENCES doctor(doctor_id),
                     FOREIGN KEY (organization_id) REFERENCES organization(organization_id)
                 );
-
             """
-            cur.execute(query)
-            self.db.commit()
-        except Exception as e:
-            self.db.rollback()
-            logger.error(f"Database Error while Initializing: {e}")
-            raise 
-        finally:
-            cur.close()
+        return self.__execute_query(query)
 
     def create_user(self, user_id, email, password_hash, name, is_admin, phone_number, aadhaar_number, dob, gender, chronic_diseases):
-        cur = self.db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-        try:
-            query = """
-                INSERT INTO app_user (user_id, email, password_hash, name, is_admin, phone_number, aadhaar_number, dob, gender, chronic_diseases)
-                VALUES (%s, %s, %s, %s, %s, %s,%s, %s, %s, %s)
-                RETURNING user_id;
-            """
-            cur.execute(query, (user_id, email, password_hash, name, is_admin, phone_number, aadhaar_number, dob, gender, chronic_diseases,))
-            user_id = cur.fetchone()['user_id']
-            self.db.commit()
-            return user_id
-        except Exception as e:
-            self.db.rollback()
-            logger.error(f"Database Error: {e}")
-            raise
-        finally:
-            cur.close()
-        
+        query = """
+            INSERT INTO app_user (user_id, email, password_hash, name, is_admin, phone_number, aadhaar_number, dob, gender, chronic_diseases)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            RETURNING user_id;
+        """
+        return self.__execute_query(query, (user_id, email, password_hash, name, is_admin, phone_number, aadhaar_number, dob, gender, chronic_diseases), fetchone=True)['user_id']
+
     def create_organization(self, organization_id, organization_name, license_no, address, contact_number, admin_id):
-        cur = self.db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-        try:
-            query = """
-                INSERT INTO organization (organization_id, organization_name, license_no, address, contact_number, admin_id)
-                VALUES (%s, %s, %s, %s, %s, %s)
-                RETURNING organization_id;
-            """
-            cur.execute(query, (organization_id, organization_name, license_no, address, contact_number, admin_id,))
-            organization = cur.fetchone()
-            self.db.commit()
-            return organization
-        except Exception as e:
-            self.db.rollback()
-            logger.error(f"Database Error: {e}")
-            raise
-        finally:
-            cur.close()
+        query = """
+            INSERT INTO organization (organization_id, organization_name, license_no, address, contact_number, admin_id)
+            VALUES (%s, %s, %s, %s, %s, %s)
+            RETURNING organization_id;
+        """
+        return self.__execute_query(query, (organization_id, organization_name, license_no, address, contact_number, admin_id), fetchone=True)
 
     def get_user_by_email(self, email):
-        cur = self.db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-        try:
-            query = "SELECT * FROM app_user WHERE email = %s"
-            cur.execute(query, (email,))
-            user = cur.fetchone()
-            return user
-        except Exception as e:
-            logger.error(f"Database Error: {e}")
-            raise
-        finally:
-            cur.close()
+        query = "SELECT * FROM app_user WHERE email = %s"
+        return self.__execute_query(query, (email,), fetchone=True)
 
     def get_user_by_id(self, user_id):
-        cur = self.db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-        try:
-            query = "SELECT * FROM app_user WHERE user_id = %s"
-            cur.execute(query, (user_id,))
-            user = cur.fetchone()
-            return user
-        except Exception as e:
-            logger.error(f"Database Error: {e}")
-            raise
-        finally:
-            cur.close()
-    
-    def get_user_admin_privilage_by_id(self,user_id):
-        cur = self.db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-        try:
-            query = "SELECT is_admin FROM app_user WHERE user_id = %s"
-            cur.execute(query, (user_id,))
-            is_admin = cur.fetchone()
-            return is_admin
-        except Exception as e:
-            logger.error(f"Database Error: {e}")
-            raise
-        finally:
-            cur.close()
+        query = "SELECT * FROM app_user WHERE user_id = %s"
+        return self.__execute_query(query, (user_id,), fetchone=True)
+
+    def get_user_admin_privilage_by_id(self, user_id):
+        query = "SELECT is_admin FROM app_user WHERE user_id = %s"
+        return self.__execute_query(query, (user_id,), fetchone=True)
 
     def update_user_privilage(self, user_id, is_admin):
-        cur = self.db.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-        try:
-            query = "UPDATE app_user SET is_admin = %s WHERE user_id = %s"
-            cur.execute(query, (is_admin, user_id,))
-            self.db.commit()
-        except Exception as e:
-            self.db.rollback()
-            logger.error(f"Database Error: {e}")
-            raise
-        finally:
-            cur.close()
+        query = "UPDATE app_user SET is_admin = %s WHERE user_id = %s"
+        self.__execute_query(query, (is_admin, user_id))
 
 
 db = Database()
