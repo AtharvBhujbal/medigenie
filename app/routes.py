@@ -39,7 +39,7 @@ def login():
         password = data.get('password')
         
         if not email or not password:
-            resp = IS_ERROR["ERR_INVALID_CREDENTIALS"]
+            resp = IS_ERROR["ERR_USER_INVALID_CREDENTIALS"]
             status = STATUS["BAD_REQUEST"]
 
         user = User(email=email, password=password)
@@ -51,11 +51,12 @@ def login():
             token = token_obj.generate_token(user_id)
             resp = IS_SUCCESS["LOGIN_SUCCESS"]
             status = STATUS["OK"]
+            resp['user_id'] = user_id
             resp['token'] = token
 
     except Exception as e:
         logger.error(f"Login Error: {e}")
-        resp = IS_ERROR["ERR_LOGIN_FAILED"]
+        resp = IS_ERROR["ERR_USER_LOGIN_FAILED"]
         status = STATUS["INTERNAL_SERVER_ERROR"]
     
     return jsonify(resp), status
@@ -87,13 +88,13 @@ def create():
             resp = IS_ERROR["ERR_USER_ALREADY_EXISTS"]
             status = STATUS["BAD_REQUEST"]
         else:
-            resp = IS_SUCCESS["REGISTRATION_SUCCESS"]
+            resp = IS_SUCCESS["USER_CREATED"]
             status = STATUS["OK"]
             resp['user_id'] = user_id
 
     except Exception as e:
         logger.error(f"Registration Error: {e}")
-        resp = IS_ERROR["ERR_REGISTRATION_FAILED"]
+        resp = IS_ERROR["ERR_USER_CREATION_FAILED"]
         status = STATUS["INTERNAL_SERVER_ERROR"]
 
     return jsonify(resp), status
@@ -136,7 +137,7 @@ def create_organization():
         status = STATUS["BAD_REQUEST"]
     except Exception as e:
         logger.error(f"Oragnization Registration Error: {e}")
-        resp = IS_ERROR["ERR_REGISTRATION_FAILED"]
+        resp = IS_ERROR["ERR_ORG_CREATION_FAILED"]
         status = STATUS["INTERNAL_SERVER_ERROR"]
 
     return jsonify(resp), status
@@ -146,17 +147,22 @@ def create_organization():
 def update_user_privilege():
     try:
         data = request.get_json()
-        user_id = data.get('user_id')
+        user_email = data.get('user_email')
         is_admin = data.get("is_admin")
-        if user_id is None:
-            resp = IS_ERROR["ERR_USER_ID_MISSING"]
+        if user_email is None:
+            resp = IS_ERROR["ERR_USER_MAIL_MISSING"]
             status = STATUS["BAD_REQUEST"]
         elif is_admin is None:
             resp = IS_ERROR["ERR_USER_PRIVILEGE_MISSING"]
             status = STATUS["BAD_REQUEST"]
+        user = User(email=user_email,password=None)
+        user_exits, user_id = user.get_user_id_by_email()
+        if not user_exits:
+            resp = IS_ERROR["ERR_USER_NOT_FOUND"]
+            status = STATUS["BAD_REQUEST"]
         else:
             db.update_user_privilage(user_id,is_admin)
-            resp = IS_SUCCESS["REGISTRATION_SUCCESS"]
+            resp = IS_SUCCESS["USER_UPDATED"]
             status = STATUS["OK"]
 
     except Exception as e:
@@ -194,9 +200,35 @@ def register_doctor():
                 resp = IS_SUCCESS["REGISTRATION_SUCCESS"]
                 status = STATUS["OK"]
                 resp['doctor_id'] = doctor_id
+                resp['user_id'] = user_id
     except Exception as e:
         logger.error(f"Doctor Registration Error: {e}")
         resp = IS_ERROR["ERR_REGISTRATION_FAILED"]
+        status = STATUS["INTERNAL_SERVER_ERROR"]
+
+    return jsonify(resp), status
+
+@med_bp.route('/get-doctor-organization',methods=['GET'])
+def get_doctor_organization():
+    try:
+        data = request.get_json()
+        user_id = data.get('user_id')
+        if user_id is None:
+            resp = IS_ERROR["ERR_USER_ID_MISSING"]
+            status = STATUS["BAD_REQUEST"]
+        else:
+            doctor = Doctor(user_id=user_id)
+            organization = doctor.get_doctor_organization_by_user_id()
+            if not organization:
+                resp = IS_ERROR["ERR_ORG_NOT_FOUND"]
+                status = STATUS["NOT_FOUND"]
+            else:
+                resp = IS_SUCCESS["ORG_FOUND"]
+                status = STATUS["OK"]
+                resp['organization'] = organization
+    except Exception as e:
+        logger.error(f"Get Doctor Organization Error: {e}")
+        resp = IS_ERROR["ERR_ORG_NOT_FOUND"]
         status = STATUS["INTERNAL_SERVER_ERROR"]
 
     return jsonify(resp), status

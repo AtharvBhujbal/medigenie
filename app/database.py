@@ -156,6 +156,13 @@ class Database:
 
     def get_doctor_by_user_id(self, user_id):
         query = "SELECT * FROM doctor WHERE user_id = %s"
-        return self.__execute_query(query, (user_id,), fetchone=True)
+        return self.__execute_query(query, (user_id,), fetchall=True)
     
+    def get_doctor_organization(self, user_id):
+        query = """
+            SELECT o.organization_name
+            FROM doctor d
+            JOIN organization o ON d.organization_id = o.organization_id
+            WHERE d.user_id = %s;"""
+        return self.__execute_query(query, (user_id,), fetchall=True)
 db = Database()

@@ -16,8 +16,9 @@ class Doctor:
         Returns:
             bool: True if the doctor is already registered, False otherwise.
         """
-        doctor = self._db.get_doctor_by_user_id(self.user_id)
-        if doctor and self.organization_id == doctor['organization_id']:
+        doctor_list = self._db.get_doctor_by_user_id(self.user_id)
+        doctor_org_id_list = [doctor['organization_id'] for doctor in doctor_list]
+        if (doctor_org_id_list) and (self.organization_id in doctor_org_id_list):
             return True
         return False
     
@@ -33,3 +34,13 @@ class Doctor:
             return False, None
         doctor_id = self._db.create_doctor(self.doctor_id, self.user_id, self.organization_id, self.specialization, self.license_number)
         return True, doctor_id
+    
+    def get_doctor_organization_by_user_id(self):
+        """
+        Gets the organization of the doctor.
+        Returns:
+            dict: The organization details if found, None otherwise.
+        """
+        org_list = self._db.get_doctor_organization(self.user_id)
+        org_name_list = [org['organization_name'] for org in org_list]
+        return org_name_list

@@ -50,7 +50,7 @@ def sudo_admin_required(f):
             status = STATUS["BAD_REQUEST"]
             return jsonify(resp), status
         user = db.get_user_by_id(user_id)
-        if user['email'] != os.getenv("SUDO_ADMIN_EMAIL"):
+        if not user or user['email'] != os.getenv("SUDO_ADMIN_EMAIL"):
             resp = IS_ERROR["ERR_USER_UNAUTHORIZED"]
             status = STATUS["BAD_REQUEST"]
             return jsonify(resp), status
