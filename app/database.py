@@ -173,4 +173,13 @@ class Database:
         query = "SELECT * FROM organization WHERE license_number = %s"
         return self.__execute_query(query, (license_number,), fetchone=True)
 
+
+    # Consultation-related db calls
+    def create_consultation_record(self, record_id, patient_id, doctor_id, organization_id):
+        query = """
+            INSERT INTO consultation_record (record_id, patient_id, doctor_id, organization_id)
+            VALUES (%s, %s, %s, %s)
+            RETURNING record_id;
+        """
+        return self.__execute_query(query, (record_id, patient_id, doctor_id, organization_id), fetchone=True)['record_id']
 db = Database()

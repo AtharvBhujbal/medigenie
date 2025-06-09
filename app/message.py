@@ -13,6 +13,9 @@ IS_SUCCESS = {
 
     # Token-related success messages
     "AUTH_TOKEN_VALID": {"code": "auth_token_valid", "message": "Authentication token is valid"},
+
+    # Consultation-related success messages
+    "CONSULTATION_CREATED": {"code": "consultation_created", "message": "Consultation record created successfully"},
 }
 
 IS_ERROR = {

@@ -2,15 +2,16 @@ from flask import Blueprint, render_template, jsonify, request
 import psycopg2
 med_bp = Blueprint('med', __name__)
 
-from .database import db
-from .message import IS_SUCCESS, IS_ERROR, STATUS
-from .log import logger
-from .redis import cache
-from .user import User
-from .doctor import Doctor
-from .organization import Organization
-from .token import token_obj
-from .decorator import token_required, admin_required, sudo_admin_required
+from app.database import db
+from app.message import IS_SUCCESS, IS_ERROR, STATUS
+from app.log import logger
+from app.redis import cache
+from app.user import User
+from app.doctor import Doctor
+from app.organization import Organization
+from app.token import token_obj
+from app.decorator import token_required, admin_required, sudo_admin_required
+from app.consultation import Consultation
 
 @med_bp.route('/')
 def hello():
@@ -255,4 +256,26 @@ def get_user():
         resp = IS_ERROR["ERR_USER_GET_FAILED"]
         status = STATUS["INTERNAL_SERVER_ERROR"]
 
+    return jsonify(resp), status
+
+@med_bp.route('/create-consultation',methods=['POST'])
+def create_consultation():
+    try:
+        data = request.get_json()
+        patient_id = data.get('patient_id')
+        doctor_id = data.get('doctor_id')
+        organization_id = data.get('organization_id')
+        if not patient_id or not doctor_id or not organization_id:
+            resp = IS_ERROR["ERR_USER_ID_MISSING"]
+            status = STATUS["BAD_REQUEST"]
+        consultation_record = Consultation(patient_id=patient_id, doctor_id=doctor_id, organization_id=organization_id)
+        record_id = consultation_record.create()
+        resp = IS_SUCCESS["CONSULTATION_CREATED"]
+        status = STATUS["OK"]
+        resp['record_id'] = record_id
+    except Exception as e:
+        logger.error(f"Analyze Error: {e}")
+        resp = IS_ERROR["ERR_ANALYZE_FAILED"]
+        status = STATUS["INTERNAL_SERVER_ERROR"]
+    
     return jsonify(resp), status
