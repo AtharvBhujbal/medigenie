@@ -6,6 +6,7 @@ IS_SUCCESS = {
     # User-related success messages
     "USER_CREATED": {"code": "user_created", "message": "User created successfully"},
     "USER_UPDATED": {"code": "user_updated", "message": "User updated successfully"},
+    "USER_FOUND": {"code": "user_found", "message": "User found"},
 
     # Organization-related success messages
     "ORG_FOUND": {"code": "org_found", "message": "Organization found"},
@@ -28,6 +29,7 @@ IS_ERROR = {
     "ERR_USER_UNAUTHORIZED": {"code": "user_unauthorized", "message": "User is not authorized to perform this action"},
     "ERR_USER_PRIVILEGE_MISSING": {"code": "user_privilege_missing", "message": "User privilege is missing"},
     "ERR_USER_UPDATE_FAILED": {"code": "user_update_failed", "message": "User update failed"},
+    "ERR_USER_GET_FAILED": {"code": "user_get_failed", "message": "User retrieval failed"},
 
     # Admin-related errors
     "ERR_ADMIN_NOT_FOUND": {"code": "admin_not_found", "message": "Admin email not found"},

@@ -34,7 +34,11 @@ def admin_required(f):
             status = STATUS["BAD_REQUEST"]
             return jsonify(resp), status
         is_admin = db.get_user_admin_privilage_by_id(user_id)
-        if not is_admin:
+        if is_admin is None:
+            resp = IS_ERROR['ERR_USER_NOT_FOUND']
+            status = STATUS["NOT_FOUND"]
+            return jsonify(resp), status
+        if not is_admin.get('is_admin', False):
             resp = IS_ERROR["ERR_USER_UNAUTHORIZED"]
             status = STATUS["BAD_REQUEST"]
             return jsonify(resp), status

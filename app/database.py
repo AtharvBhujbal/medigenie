@@ -93,7 +93,7 @@ class Database:
                 );
 
                 CREATE TABLE IF NOT EXISTS consultation_record (
-                    record_id SERIAL PRIMARY KEY,
+                    record_id VARCHAR(32) PRIMARY KEY,
                     patient_id VARCHAR(32) NOT NULL,
                     doctor_id VARCHAR(32) NOT NULL,
                     organization_id VARCHAR(32) NOT NULL,
@@ -110,6 +110,7 @@ class Database:
             """
         return self.__execute_query(query)
 
+    # User-related db calls
     def create_user(self, user_id, email, password_hash, name, is_admin, phone_number, aadhaar_number, dob, gender, chronic_diseases):
         query = """
             INSERT INTO app_user (user_id, email, password_hash, name, is_admin, phone_number, aadhaar_number, dob, gender, chronic_diseases)
@@ -117,18 +118,6 @@ class Database:
             RETURNING user_id;
         """
         return self.__execute_query(query, (user_id, email, password_hash, name, is_admin, phone_number, aadhaar_number, dob, gender, chronic_diseases), fetchone=True)['user_id']
-
-    def create_organization(self, organization_id, organization_name, license_number, address, contact_number, admin_id):
-        query = """
-            INSERT INTO organization (organization_id, organization_name, license_number, address, contact_number, admin_id)
-            VALUES (%s, %s, %s, %s, %s, %s)
-            RETURNING organization_id;
-        """
-        return self.__execute_query(query, (organization_id, organization_name, license_number, address, contact_number, admin_id), fetchone=True)['organization_id']
-    
-    def get_organization_by_license(self, license_number):
-        query = "SELECT * FROM organization WHERE license_number = %s"
-        return self.__execute_query(query, (license_number,), fetchone=True)
 
     def get_user_by_email(self, email):
         query = "SELECT * FROM app_user WHERE email = %s"
@@ -140,12 +129,17 @@ class Database:
 
     def get_user_admin_privilage_by_id(self, user_id):
         query = "SELECT is_admin FROM app_user WHERE user_id = %s"
-        return self.__execute_query(query, (user_id,), fetchone=True)['is_admin']
+        return self.__execute_query(query, (user_id,), fetchone=True)
+    
+    def get_user_patient_data(self,email):
+        query = "SELECT name, phone_number, gender, chronic_diseases FROM app_user WHERE email = %s"
+        return self.__execute_query(query, (email,), fetchone=True)
 
     def update_user_privilage(self, user_id, is_admin):
         query = "UPDATE app_user SET is_admin = %s WHERE user_id = %s"
         self.__execute_query(query, (is_admin, user_id))
 
+    #Doctor-related db calls
     def create_doctor(self, doctor_id, user_id, organization_id, specialization, license_number):
         query = """
             INSERT INTO doctor (doctor_id, user_id, organization_id, specialization, license_number)
@@ -165,4 +159,18 @@ class Database:
             JOIN organization o ON d.organization_id = o.organization_id
             WHERE d.user_id = %s;"""
         return self.__execute_query(query, (user_id,), fetchall=True)
+    
+    # Organization-related db calls
+    def create_organization(self, organization_id, organization_name, license_number, address, contact_number, admin_id):
+        query = """
+            INSERT INTO organization (organization_id, organization_name, license_number, address, contact_number, admin_id)
+            VALUES (%s, %s, %s, %s, %s, %s)
+            RETURNING organization_id;
+        """
+        return self.__execute_query(query, (organization_id, organization_name, license_number, address, contact_number, admin_id), fetchone=True)['organization_id']
+    
+    def get_organization_by_license(self, license_number):
+        query = "SELECT * FROM organization WHERE license_number = %s"
+        return self.__execute_query(query, (license_number,), fetchone=True)
+
 db = Database()

@@ -211,8 +211,7 @@ def register_doctor():
 @med_bp.route('/get-doctor-organization',methods=['GET'])
 def get_doctor_organization():
     try:
-        data = request.get_json()
-        user_id = data.get('user_id')
+        user_id = request.headers.get('UserID')
         if user_id is None:
             resp = IS_ERROR["ERR_USER_ID_MISSING"]
             status = STATUS["BAD_REQUEST"]
@@ -229,6 +228,31 @@ def get_doctor_organization():
     except Exception as e:
         logger.error(f"Get Doctor Organization Error: {e}")
         resp = IS_ERROR["ERR_ORG_NOT_FOUND"]
+        status = STATUS["INTERNAL_SERVER_ERROR"]
+
+    return jsonify(resp), status
+
+@med_bp.route('/get-patient-data',methods=['GET'])
+def get_user():
+    try:
+        data = request.get_json()
+        user_email = data.get('user_email')
+        if user_email is None:
+            resp = IS_ERROR["ERR_USER_ID_MISSING"]
+            status = STATUS["BAD_REQUEST"]
+        else:
+            patient = User(email=user_email)
+            patient_data = patient.get_user_patient_data()
+            if not patient_data:
+                resp = IS_ERROR["ERR_USER_NOT_FOUND"]
+                status = STATUS["NOT_FOUND"]
+            else:
+                resp = IS_SUCCESS["USER_FOUND"]
+                status = STATUS["OK"]
+                resp['patient'] = patient_data
+    except Exception as e:
+        logger.error(f"Get User Error: {e}")
+        resp = IS_ERROR["ERR_USER_GET_FAILED"]
         status = STATUS["INTERNAL_SERVER_ERROR"]
 
     return jsonify(resp), status

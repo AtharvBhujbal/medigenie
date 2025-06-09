@@ -67,3 +67,19 @@ class User:
         if not user:
             return False, None
         return True, user['user_id']
+    
+    def get_user(self) -> dict:
+        """
+        Gets user details by user id.
+        Returns:
+            dict: The user details if found, None otherwise.
+        """
+        return self._db.get_user_by_id(self.user_id)
+    
+    def get_user_patient_data(self) -> dict:
+        """
+        Gets patients details
+        Returns:
+            dict: The user details if found, None otherwise.
+        """
+        return self._db.get_user_patient_data(self.email)

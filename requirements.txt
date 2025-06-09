@@ -226,7 +226,6 @@ uri-template
 uritemplate
 urllib3
 uvicorn
-uvloop
 vine
 watchfiles
 wcwidth
