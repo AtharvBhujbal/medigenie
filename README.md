@@ -1,6 +1,6 @@
 
 <div align="center">
-    <img src="medigenie-logo.png" alt="Medigenie Logo" width="400" height="400">
+    <img src="src/medigenie-logo.png" alt="Medigenie Logo" width="400" height="400">
 </div>
 
 <div>
