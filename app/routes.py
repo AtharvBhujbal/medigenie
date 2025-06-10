@@ -268,11 +268,60 @@ def create_consultation():
         if not patient_id or not doctor_id or not organization_id:
             resp = IS_ERROR["ERR_USER_ID_MISSING"]
             status = STATUS["BAD_REQUEST"]
-        consultation_record = Consultation(patient_id=patient_id, doctor_id=doctor_id, organization_id=organization_id)
-        record_id = consultation_record.create()
-        resp = IS_SUCCESS["CONSULTATION_CREATED"]
-        status = STATUS["OK"]
-        resp['record_id'] = record_id
+        else:
+            consultation_record = Consultation(patient_id=patient_id, doctor_id=doctor_id, organization_id=organization_id)
+            record_id = consultation_record.create()
+            resp = IS_SUCCESS["CONSULTATION_CREATED"]
+            status = STATUS["OK"]
+            resp['record_id'] = record_id
+    except Exception as e:
+        logger.error(f"Analyze Error: {e}")
+        resp = IS_ERROR["ERR_CONS_CREATE_FAILED"]
+        status = STATUS["INTERNAL_SERVER_ERROR"]
+    
+    return jsonify(resp), status
+
+@med_bp.route('/get-previous-consultation', methods=['GET'])
+def get_previous_consultation():
+    try:
+        patient_id = request.get_json().get('patient_id')
+        if not patient_id:
+            resp = IS_ERROR["ERR_USER_ID_MISSING"]
+            status = STATUS["BAD_REQUEST"]
+        else:
+            consultation = Consultation(patient_id=patient_id)
+            records = consultation.get_previous_consultation_records()
+            if not records:
+                resp = IS_ERROR["ERR_CONS_NOT_FOUND"]
+                status = STATUS["NOT_FOUND"]
+            else:
+                resp = IS_SUCCESS["CONSULTATION_FOUND"]
+                status = STATUS["OK"]
+                resp['records'] = records
+    except Exception as e:
+        logger.error(f"Get Previous Consultation Error: {e}")
+        resp = IS_ERROR["ERR_CONS_GET_FAILED"]
+        status = STATUS["INTERNAL_SERVER_ERROR"]
+
+    return jsonify(resp), status
+
+@med_bp.route('/analyze', methods=['POST'])
+def analyze():
+    try:
+        data = request.get_json()
+        transcript = data.get('transcript')
+        record_id = data.get('consultation_id')
+        if not transcript:
+            resp = IS_ERROR["ERR_TRANSCRIPT_MISSING"]
+            status = STATUS["BAD_REQUEST"]
+        else:
+            consultation_obj = Consultation(record_id=record_id, transcript=transcript)
+            consultation_obj.analyze_transcript()
+            resp = IS_SUCCESS["ANALYZE_SUCCESS"]
+            status = STATUS["OK"]
+            resp['top_5_disease'] = consultation_obj.top_5_disease
+            resp['prescribed_medicine'] = consultation_obj.prescribed_medicine
+            resp['transcript_summary'] = consultation_obj.transcript_summary
     except Exception as e:
         logger.error(f"Analyze Error: {e}")
         resp = IS_ERROR["ERR_ANALYZE_FAILED"]

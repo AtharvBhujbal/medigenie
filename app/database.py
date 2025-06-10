@@ -4,6 +4,7 @@ load_dotenv()
 import os
 from app.log import logger
 import psycopg2.extras
+from datetime import datetime
 
 class Database:
     def __init__(self):
@@ -99,7 +100,7 @@ class Database:
                     organization_id VARCHAR(32) NOT NULL,
                     top_5_disease TEXT[],
                     prescribed_medicine TEXT[],
-                    transcribe_summary TEXT,
+                    transcript_summary TEXT,
                     consultation_date_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -136,8 +137,8 @@ class Database:
         return self.__execute_query(query, (email,), fetchone=True)
 
     def update_user_privilage(self, user_id, is_admin):
-        query = "UPDATE app_user SET is_admin = %s WHERE user_id = %s"
-        self.__execute_query(query, (is_admin, user_id))
+        query = "UPDATE app_user SET is_admin = %s, updated_at = %s WHERE user_id = %s"
+        self.__execute_query(query, (is_admin, datetime.now(),user_id))
 
     #Doctor-related db calls
     def create_doctor(self, doctor_id, user_id, organization_id, specialization, license_number):
@@ -182,4 +183,32 @@ class Database:
             RETURNING record_id;
         """
         return self.__execute_query(query, (record_id, patient_id, doctor_id, organization_id), fetchone=True)['record_id']
+    
+    def get_consultation_records(self, patient_id):
+        query = """
+            SELECT 
+            u.name AS patient_name, 
+            d.name AS doctor_name, 
+            o.organization_name, 
+            cr.top_5_disease, 
+            cr.prescribed_medicine, 
+            cr.transcript_summary, 
+            cr.consultation_date_time
+            FROM consultation_record cr
+            JOIN app_user u ON cr.patient_id = u.user_id
+            JOIN doctor doc ON cr.doctor_id = doc.doctor_id
+            JOIN app_user d ON doc.user_id = d.user_id
+            JOIN organization o ON cr.organization_id = o.organization_id
+            WHERE cr.patient_id = %s
+            ORDER BY cr.consultation_date_time DESC
+        """
+        return self.__execute_query(query, (patient_id,), fetchall=True)
+    
+    def update_consultation_record(self, record_id, transcript_summary, top_5_disease, prescribed_medicine):
+        query = """
+            UPDATE consultation_record
+            SET transcript_summary = %s, top_5_disease = %s, prescribed_medicine = %s, updated_at = %s
+            WHERE record_id = %s;
+        """
+        self.__execute_query(query, (transcript_summary, top_5_disease, prescribed_medicine, datetime.now(), record_id))
 db = Database()

@@ -2,6 +2,7 @@ IS_SUCCESS = {
     "DATABASE_INITIALIZED": {"code": "db_init", "message": "Database initialized successfully"},
     "LOGIN_SUCCESS": {"code": "login_success", "message": "Login successful"},
     "REGISTRATION_SUCCESS": {"code": "registration_success", "message": "Registration successful"},
+    "ANALYZE_SUCCESS": {"code": "analyze_success", "message": "Transcript analysis successful"},
 
     # User-related success messages
     "USER_CREATED": {"code": "user_created", "message": "User created successfully"},
@@ -16,10 +17,13 @@ IS_SUCCESS = {
 
     # Consultation-related success messages
     "CONSULTATION_CREATED": {"code": "consultation_created", "message": "Consultation record created successfully"},
+    "CONSULTATION_FOUND": {"code": "consultation_found", "message": "Consultation record found"},
 }
 
 IS_ERROR = {
     "ERR_DATABASE_INITIALIZATION": {"code": "db_init", "message": "Database initialization failed"},
+    "ERR_TRANSCRIPT_MISSING":{ "code": "transcript_missing", "message": "Transcript is missing in the request"},
+    "ERR_ANALYZE_FAILED":{ "code": "analyze_failed", "message": "Transcript analysis failed"},
 
     # User-related errors
     "ERR_USER_NOT_FOUND": {"code": "user_not_found", "message": "User not found"},
@@ -50,6 +54,11 @@ IS_ERROR = {
     "ERR_ORG_ALREADY_EXISTS": {"code": "org_already_exists", "message": "Organization already exists"},
     "ERR_ORG_NOT_FOUND": {"code": "org_not_found", "message": "Organization not found"},
     "ERR_ORG_CREATION_FAILED": {"code": "org_creation_failed", "message": "Organization creation failed"},
+
+    # Consultation-related errors
+    "ERR_CONS_CREATE_FAILED": {"code": "consultation_create_failed", "message": "Consultation record creation failed"},
+    "ERR_CONS_NOT_FOUND": {"code": "consultation_not_found", "message": "Consultation record not found"},
+    "ERR_CONS_GET_FAILED": {"code": "consultation_get_failed", "message": "Consultation retrieval failed"},
 }
 
 
