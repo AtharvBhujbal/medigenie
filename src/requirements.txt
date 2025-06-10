@@ -135,6 +135,7 @@ notebook
 notebook_shim
 numpy
 oauthlib
+ollama
 openai
 orjson
 outcome
@@ -226,6 +227,7 @@ uri-template
 uritemplate
 urllib3
 uvicorn
+uvloop
 vine
 watchfiles
 wcwidth
