@@ -12,6 +12,7 @@ from app.organization import Organization
 from app.token import token_obj
 from app.decorator import token_required, admin_required, sudo_admin_required
 from app.consultation import Consultation
+from app.transcriber import Transcriber
 
 @med_bp.route('/')
 def hello():
@@ -44,7 +45,7 @@ def login():
             status = STATUS["BAD_REQUEST"]
 
         user = User(email=email, password=password)
-        valid, user_id = user.isUserValid()
+        valid, user_id, doctor_id = user.isUserValid()
         if not valid:
             resp = IS_ERROR["ERR_USER_NOT_FOUND"]
             status = STATUS["NOT_FOUND"]
@@ -54,6 +55,8 @@ def login():
             status = STATUS["OK"]
             resp['user_id'] = user_id
             resp['token'] = token
+            if doctor_id:
+                resp['doctor_id'] = doctor_id
 
     except Exception as e:
         logger.error(f"Login Error: {e}")
@@ -309,8 +312,8 @@ def get_previous_consultation():
 def analyze():
     try:
         data = request.get_json()
-        transcript = data.get('transcript')
         record_id = data.get('consultation_id')
+        transcript = data.get('transcript')
         if not transcript:
             resp = IS_ERROR["ERR_TRANSCRIPT_MISSING"]
             status = STATUS["BAD_REQUEST"]
@@ -327,4 +330,21 @@ def analyze():
         resp = IS_ERROR["ERR_ANALYZE_FAILED"]
         status = STATUS["INTERNAL_SERVER_ERROR"]
     
+    return jsonify(resp), status
+
+@med_bp.route('/get-transcript',methods=['POST'])
+def analyze_transcript():
+    try:
+        audio_file = request.files.get('audio_data')
+        file_type = request.form.get('file_type','mp3')
+        trans = Transcriber(model_name="turbo")
+        file_path, audio_id = trans.save_audio_file(audio_file=audio_file, file_type=file_type)
+        resp = IS_SUCCESS["TRANSCRIPTION_SUCCESS"]
+        status = STATUS["OK"]
+        resp['transcript'] = trans.get_transcription(file_path)
+    except Exception as e:
+        logger.error(f"Audio File Save Error: {e}")
+        resp = IS_ERROR["ERR_AUDIO_FILE_SAVE_FAILED"]
+        status = STATUS["INTERNAL_SERVER_ERROR"]
+        
     return jsonify(resp), status

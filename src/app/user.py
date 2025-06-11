@@ -39,7 +39,11 @@ class User:
             return False, None
         if not self._check_password(user['password_hash'], self.password):
             return False, None
-        return True, user['user_id']
+        check, doctor_id = self.is_user_doctor(user['user_id'])
+        if check:
+            user['doctor_id'] = doctor_id
+            return True, user['user_id'], user['doctor_id']
+        return True, user['user_id'], None
     
     def create(self) -> tuple[bool, str]:
         """
@@ -83,3 +87,15 @@ class User:
             dict: The user details if found, None otherwise.
         """
         return self._db.get_user_patient_data(self.email)
+    
+    def is_user_doctor(self, user_id: str) -> tuple[bool, str]:
+        """
+        Checks if the user is a doctor.
+        
+        :param user_id: The ID of the user to check.
+        :return: A tuple containing a boolean indicating if the user is a doctor and the doctor's ID if they are.
+        """
+        doctor = self._db.get_doctor_by_user_id(user_id)
+        if doctor:
+            return True, doctor[0]['doctor_id']
+        return False, None

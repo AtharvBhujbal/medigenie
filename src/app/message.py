@@ -18,6 +18,8 @@ IS_SUCCESS = {
     # Consultation-related success messages
     "CONSULTATION_CREATED": {"code": "consultation_created", "message": "Consultation record created successfully"},
     "CONSULTATION_FOUND": {"code": "consultation_found", "message": "Consultation record found"},
+
+    "TRANSCRIPTION_SUCCESS": {"code": "transcription_success", "message": "Transcription completed successfully"},
 }
 
 IS_ERROR = {
@@ -59,6 +61,8 @@ IS_ERROR = {
     "ERR_CONS_CREATE_FAILED": {"code": "consultation_create_failed", "message": "Consultation record creation failed"},
     "ERR_CONS_NOT_FOUND": {"code": "consultation_not_found", "message": "Consultation record not found"},
     "ERR_CONS_GET_FAILED": {"code": "consultation_get_failed", "message": "Consultation retrieval failed"},
+
+    "ERR_AUDIO_FILE_SAVE_FAILED": {"code": "audio_file_save_failed", "message": "Failed to save the audio file"},
 }
 
 

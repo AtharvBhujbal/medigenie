@@ -99,6 +99,7 @@ class Database:
                     patient_id VARCHAR(32) NOT NULL,
                     doctor_id VARCHAR(32) NOT NULL,
                     organization_id VARCHAR(32) NOT NULL,
+                    transcript TEXT,
                     top_5_disease JSONB,
                     prescribed_medicine TEXT[],
                     transcript_summary TEXT,
@@ -134,7 +135,7 @@ class Database:
         return self.__execute_query(query, (user_id,), fetchone=True)
     
     def get_user_patient_data(self,email):
-        query = "SELECT name, email, dob, phone_number, gender, chronic_diseases FROM app_user WHERE email = %s"
+        query = "SELECT name, user_id, email, dob, phone_number, gender, chronic_diseases FROM app_user WHERE email = %s"
         return self.__execute_query(query, (email,), fetchone=True)
 
     def update_user_privilage(self, user_id, is_admin):
