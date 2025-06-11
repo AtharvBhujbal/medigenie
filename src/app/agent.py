@@ -49,7 +49,7 @@ class Agent:
         Analyze the following transcript and extract the following 
         1. top 5 diseases with each percentage out of 100.
         2. prescribed medicine
-        3. summary:
+        3. summary in 3rd person's point of view.
         Transcript: {transcript}"""
         response = self.__generate_response(prompt)
         return response

@@ -21,7 +21,7 @@ class Transcriber:
         :return: The transcription of the audio file.
         """
         result = self.model.transcribe(audio_path)
-        print(f"Transcription result: {result['text']}")
+        # print(f"Transcription result: {result['text']}")
         return result['text']
     
     def save_audio_file(self, audio_file, file_type: str) -> str:

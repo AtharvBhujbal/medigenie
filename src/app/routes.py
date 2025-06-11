@@ -340,8 +340,8 @@ def analyze_transcript():
         trans = Transcriber(model_name="turbo")
         file_path, audio_id = trans.save_audio_file(audio_file=audio_file, file_type=file_type)
         resp = IS_SUCCESS["TRANSCRIPTION_SUCCESS"]
-        status = STATUS["OK"]
         resp['transcript'] = trans.get_transcription(file_path)
+        status = STATUS["OK"]
     except Exception as e:
         logger.error(f"Audio File Save Error: {e}")
         resp = IS_ERROR["ERR_AUDIO_FILE_SAVE_FAILED"]
