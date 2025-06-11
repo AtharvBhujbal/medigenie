@@ -233,7 +233,7 @@ def get_doctor_organization():
 
     return jsonify(resp), status
 
-@med_bp.route('/get-patient-data',methods=['GET'])
+@med_bp.route('/get-patient-data',methods=['POST'])
 def get_user():
     try:
         data = request.get_json()
@@ -281,7 +281,7 @@ def create_consultation():
     
     return jsonify(resp), status
 
-@med_bp.route('/get-previous-consultation', methods=['GET'])
+@med_bp.route('/get-previous-consultation', methods=['POST'])
 def get_previous_consultation():
     try:
         patient_id = request.get_json().get('patient_id')

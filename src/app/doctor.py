@@ -42,5 +42,4 @@ class Doctor:
             dict: The organization details if found, None otherwise.
         """
         org_list = self._db.get_doctor_organization(self.user_id)
-        org_name_list = [org['organization_name'] for org in org_list]
-        return org_name_list
+        return org_list

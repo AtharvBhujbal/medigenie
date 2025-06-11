@@ -1,6 +1,7 @@
 import psycopg2
 from dotenv import load_dotenv
 load_dotenv()
+import json
 import os
 from app.log import logger
 import psycopg2.extras
@@ -98,7 +99,7 @@ class Database:
                     patient_id VARCHAR(32) NOT NULL,
                     doctor_id VARCHAR(32) NOT NULL,
                     organization_id VARCHAR(32) NOT NULL,
-                    top_5_disease TEXT[],
+                    top_5_disease JSONB,
                     prescribed_medicine TEXT[],
                     transcript_summary TEXT,
                     consultation_date_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -133,7 +134,7 @@ class Database:
         return self.__execute_query(query, (user_id,), fetchone=True)
     
     def get_user_patient_data(self,email):
-        query = "SELECT name, phone_number, gender, chronic_diseases FROM app_user WHERE email = %s"
+        query = "SELECT name, email, dob, phone_number, gender, chronic_diseases FROM app_user WHERE email = %s"
         return self.__execute_query(query, (email,), fetchone=True)
 
     def update_user_privilage(self, user_id, is_admin):
@@ -155,7 +156,7 @@ class Database:
     
     def get_doctor_organization(self, user_id):
         query = """
-            SELECT o.organization_name
+            SELECT o.organization_name, o.organization_id
             FROM doctor d
             JOIN organization o ON d.organization_id = o.organization_id
             WHERE d.user_id = %s;"""
@@ -210,5 +211,5 @@ class Database:
             SET transcript_summary = %s, top_5_disease = %s, prescribed_medicine = %s, updated_at = %s
             WHERE record_id = %s;
         """
-        self.__execute_query(query, (transcript_summary, top_5_disease, prescribed_medicine, datetime.now(), record_id))
+        self.__execute_query(query, (transcript_summary, json.dumps(top_5_disease), prescribed_medicine, datetime.now(), record_id))
 db = Database()

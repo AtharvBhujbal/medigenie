@@ -5,10 +5,12 @@ import ollama
 # from langchain_core.output_parsers import PydanticOutputParser
 # from langchain_core.prompts import PromptTemplate
 from pydantic import BaseModel
-
+class Disease(BaseModel):
+    name: str
+    percentage: int
 
 class Analyze(BaseModel):
-    top_5_disease: list[str] 
+    top_5_disease: list[Disease] 
     prescribed_medicine: list[str] 
     transcript_summary: str
 
@@ -44,8 +46,10 @@ class Agent:
                 - transcript_summary: Summary of the consultation.
         """
         prompt = f"""
-        Analyze the following transcript and extract the 
-        top 5 diseases, prescribed medicine, and a summary:
+        Analyze the following transcript and extract the following 
+        1. top 5 diseases with each percentage out of 100.
+        2. prescribed medicine
+        3. summary:
         Transcript: {transcript}"""
         response = self.__generate_response(prompt)
         return response

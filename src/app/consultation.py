@@ -1,6 +1,5 @@
 import uuid
 import json
-
 from app.database import db
 from app.agent import Agent
 
